@@ -22,27 +22,26 @@ Realiza el preprocesamiento de datos completo:
 - Predicciones con el modelo de ensamble **Stacking Regressor**.
 """)
 
-# Obtener rutas independientes del entorno de ejecución de Colab
-dir_actual = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
+# Obtener la carpeta donde está app.py
+from pathlib import Path
 
-# Buscar el escalador y el modelo en el directorio actual o en la subcarpeta 'content'
-scaler_candidates = [
-    os.path.join(dir_actual, 'min_max_scaler.joblib'),
-    os.path.join(dir_actual, '/Datos', 'min_max_scaler.joblib'),
-    os.path.join(dir_actual, '..', 'min_max_scaler.joblib')
-]
-model_candidates = [
-    os.path.join(dir_actual, 'Stacking_optimizado.joblib'),
-    os.path.join(dir_actual, '/Datos', 'Stacking_optimizado.joblib'),
-    os.path.join(dir_actual, '..', 'Stacking_optimizado.joblib')
-]
+dir_actual = Path(__file__).resolve().parent
 
-scaler_path = next((p for p in scaler_candidates if os.path.exists(p)), None)
-model_path = next((p for p in model_candidates if os.path.exists(p)), None)
+# Rutas de los archivos guardados en GitHub
+scaler_path = dir_actual / "min_max_scaler.joblib"
+model_path = dir_actual / "Stacking_optimizado.joblib"
 
-if not scaler_path or not model_path:
-    st.error("⚠️ No se encontraron los archivos del modelo o del escalador en las rutas relativas de la aplicación.")
-    st.info("Por favor, asegúrate de subir 'min_max_scaler.joblib' y 'Stacking_optimizado.joblib' junto a este archivo en tu repositorio de GitHub.")
+# Mostrar diagnóstico si falta algún archivo
+if not scaler_path.is_file() or not model_path.is_file():
+    st.error("No se encontraron los archivos del modelo o del escalador.")
+
+    st.write("Carpeta de la aplicación:", str(dir_actual))
+    st.write("Archivos encontrados:", [
+        archivo.name for archivo in dir_actual.iterdir()
+    ])
+
+    st.stop()
+
 else:
     # Cargar escalador y modelo de forma segura
     scaler = joblib.load(scaler_path)
